@@ -169,6 +169,11 @@ func (p *Parser) Parse() (res map[string]tstypes.Type, err error) {
 				continue
 			}
 
+			// Skip func type
+			if _, ok := t.Underlying().(*types.Signature); ok {
+				continue
+			}
+
 			pp := &pkgParser{
 				Parser: p,
 				pkg:    pkg.Types,
@@ -230,6 +235,9 @@ func (p *pkgParser) parseNamed(t *types.Named, dep bool) tstypes.Type {
 	}
 
 	typ := p.parseType(t.Underlying(), true)
+	if typ == nil {
+		return nil
+	}
 
 	if dummy != nil {
 		//nolint
@@ -313,6 +321,10 @@ func (p *pkgParser) parseInterface(_ *types.Interface) tstypes.Type {
 	return &tstypes.Any{}
 }
 
+type Unsupported struct {
+	// Add the same fields as your other types, but with default or placeholder values
+}
+
 func (p *pkgParser) parseType(u types.Type, dep bool) tstypes.Type {
 	var typ tstypes.Type
 	if p.Replacer != nil {
@@ -340,9 +352,6 @@ func (p *pkgParser) parseType(u types.Type, dep bool) tstypes.Type {
 		typ = p.parseMap(u)
 	case *types.Interface:
 		typ = p.parseInterface(u)
-	// types.Signature
-	case *types.Signature:
-		return nil
 	default:
 		panic("unsupported named type: " + reflect.TypeOf(u).String())
 	}
