@@ -340,6 +340,9 @@ func (p *pkgParser) parseType(u types.Type, dep bool) tstypes.Type {
 		typ = p.parseMap(u)
 	case *types.Interface:
 		typ = p.parseInterface(u)
+	// types.Signature
+	case *types.Signature:
+		return nil
 	default:
 		panic("unsupported named type: " + reflect.TypeOf(u).String())
 	}
